@@ -21,12 +21,19 @@ define(
         FixParser.prototype.parse = function(str)
         {
             // Create a sequence of fields
-            var regex = /([0-9]+)=([^|;\001]*)/g,
+            var regex = /([0-9]+)=(.*)/,
                 fields = [], result;
 
             var fixVersion = 'unknown';
 
-            while (result = regex.exec(str)) {
+            // fields can be splited by variant separators
+            var splits = str.split(/\||;|\x001|\[SOH\]|<SOH>|\^A/);
+            for (var i=0; i<splits.length; ++i) {
+                // cut the fields by separators before extracting field id and value
+                result = splits[i].match(regex);
+                if (!result)
+                    continue;
+
                 var fieldId = parseInt(result[1]),
                     value = result[2],
                     field = data.fieldById[fieldId],
